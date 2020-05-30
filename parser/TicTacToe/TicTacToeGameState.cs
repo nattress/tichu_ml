@@ -33,7 +33,12 @@ namespace TichuAI
             return 0;
         }
 
-        public override bool Equals(object? obj)
+        public override int GetHashCode()
+        {
+            return (Row << 16) ^ (Col << 8);
+        }
+
+        public override bool Equals(object obj)
         {
             if (obj == null) return false;
 
