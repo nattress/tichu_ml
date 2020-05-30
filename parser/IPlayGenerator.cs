@@ -5,8 +5,8 @@ namespace TichuAI
     /// <summary>
     /// Provides an abstraction over different styles of Play generation heuristics
     /// </summary>
-    public interface IPlayGenerator
+    public interface IPlayGenerator<Move>
     {
-        Play FindPlay(IGameState gameState);
+        Move FindPlay(IGameState<Move> gameState);
     }
 }

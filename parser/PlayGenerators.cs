@@ -2,17 +2,21 @@ using System;
 
 namespace TichuAI
 {
-    public class RandomPlayGenerator : IPlayGenerator
+    /// <summary>
+    /// Random generator uses only public surface area of IGameState&lt;T&gt; and can be
+    /// used for most move generation purposes.
+    /// </summary>
+    public class RandomPlayGenerator<Move> : IPlayGenerator<Move>
     {
-        public Play FindPlay(IGameState gameState)
+        public Move FindPlay(IGameState<Move> gameState)
         {
             return gameState.GetRandomPlay();
         }
     }
 
-    public class HighestCardPlayGenerator : IPlayGenerator
+    public class HighestCardPlayGenerator : IPlayGenerator<Play>
     {
-        public Play FindPlay(IGameState gameState)
+        public Play FindPlay(IGameState<Play> gameState)
         {
             //var plays = gameState.GetPlays();
             CardRank highestRank = CardRank.Two;

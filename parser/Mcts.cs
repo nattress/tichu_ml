@@ -3,30 +3,37 @@ using System.Text;
 
 namespace TichuAI
 {
-    public class Mcts : IPlayGenerator
+    public class Mcts<Move> : IPlayGenerator<Move>
     {
         /// <summary>
         /// Value of k in the Upper confidence function. The conventional default is sqrt(2).
         /// </summary>
         static readonly double uct_k = Math.Sqrt(2);
-        static readonly int MaxIterations = 200000;
-        static readonly int SimulationDepth = 50;
-
+        private readonly int _numIterations;
+        private readonly int _simulationDepth;
         int _exploitationCount = 0;
         int _explorationCount = 0;
-        private SearchNode GetBestUctChild(SearchNode node, double UctK)
+
+        public Mcts(int numIterations, int simulationDepth)
+        {
+            _numIterations = numIterations;
+            _simulationDepth = simulationDepth;
+        }
+
+        private SearchNode<Move> GetBestUctChild(SearchNode<Move> node, double UctK)
         {
             if (!node.IsFullyExpanded()) return null;
 
             double bestScore = double.MinValue;
-            SearchNode bestNode = null;
+            SearchNode<Move> bestNode = null;
 
             int childCount = node.ChildCount;
             for (int i = 0; i < childCount; i++)
             {
-                SearchNode child = node.GetChild(i);
-                double exploitation = (double)child.Value / ((double)child.VisitCount + Double.Epsilon);
-                double exploration = Math.Sqrt(Math.Log((double)node.VisitCount + 1) / ((double)child.VisitCount + Double.Epsilon));
+                SearchNode<Move> child = node.GetChild(i);
+                // double exploitation = (double)child.Value / ((double)child.VisitCount + Double.Epsilon);
+                double exploitation = (double)child.Value / (double)child.VisitCount;
+                double exploration = Math.Sqrt(Math.Log((double)node.VisitCount + 1) / (double)child.VisitCount);
                 double uctScore = exploitation + UctK * exploration;
                 if (exploitation > exploration)
                     _exploitationCount++;
@@ -43,15 +50,15 @@ namespace TichuAI
             return bestNode;
         }
 
-        private SearchNode GetMostVisitedChild(SearchNode node)
+        private SearchNode<Move> GetMostVisitedChild(SearchNode<Move> node)
         {
             int maxVisitCount = -1;
-            SearchNode bestNode = null;
+            SearchNode<Move> bestNode = null;
 
             int childCount = node.ChildCount;
             for (int i = 0; i < childCount; i++)
             {
-                SearchNode child = node.GetChild(i);
+                SearchNode<Move> child = node.GetChild(i);
                 if (child.VisitCount > maxVisitCount)
                 {
                     maxVisitCount = child.VisitCount;
@@ -62,7 +69,7 @@ namespace TichuAI
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < childCount; i++)
             {
-                SearchNode child = node.GetChild(i);
+                SearchNode<Move> child = node.GetChild(i);
                 sb.Append(child.Play.ToString());
                 sb.AppendLine($" Visits: {child.VisitCount} Value: {child.Value:N0}" + (child == bestNode ? " (Winner)" : ""));
             }
@@ -72,9 +79,9 @@ namespace TichuAI
             return bestNode;
         }
 
-        public Play FindPlay(IGameState initialState)
+        public Move FindPlay(IGameState<Move> initialState)
         {
-            SearchNode rootNode = new SearchNode(initialState, parent: null);
+            SearchNode<Move> rootNode = new SearchNode<Move>(initialState, parent: null);
             
             int iterations = 0;
             while (true)
@@ -85,7 +92,7 @@ namespace TichuAI
 
                 // Step 1 : Select
                 //          Drill down into the tree calculating UCT on all fully-expanded nodes
-                SearchNode node = rootNode;
+                SearchNode<Move> node = rootNode;
                 while (!node.IsTerminal() && node.IsFullyExpanded())
                 {
                     node = GetBestUctChild(node, uct_k);
@@ -98,17 +105,17 @@ namespace TichuAI
                     node = node.Expand();
                 }
 
-                IGameState state = node.State;
+                IGameState<Move> state = node.State.Clone();
 
                 // Step 3 : Simulate
                 if (!node.IsTerminal())
                 {
-                    for (int i = 0; i < SimulationDepth; i++)
+                    for (int i = 0; i < _simulationDepth; i++)
                     {
                         if (state.GameOver())
                             break;
 
-                        Play play = state.GetRandomPlay();
+                        Move play = state.GetRandomPlay();
                         if (play == null)
                             break;
                         
@@ -129,12 +136,12 @@ namespace TichuAI
                     node = node.Parent;
                 }
 
-                if (MaxIterations > 0 && iterations > MaxIterations)
+                if (iterations > _numIterations)
                     break;
 
                 iterations++;
             }
-
+            //Console.WriteLine(rootNode.PrettyPrint());
             var result = GetMostVisitedChild(rootNode).Play;
             return result;
         }

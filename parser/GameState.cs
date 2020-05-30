@@ -62,7 +62,7 @@ namespace TichuAI
         }
     }
 
-    public class GameState : IGameState
+    public class GameState : IGameState<Play>
     {
         // Player cards
         // Cards that have been played
@@ -80,6 +80,7 @@ namespace TichuAI
         private List<Play> _currentTrick = new List<Play>();
         private int _pointOfViewPlayer;
         private List<Play> _playHistory = new List<Play>();
+        private Random _random = null;
 
         public GameState(Deck deck)
         {
@@ -99,7 +100,7 @@ namespace TichuAI
             CurrentPlayerTurn = player;
         }
 
-        public IGameState Clone()
+        public IGameState<Play> Clone()
         {
             GameState clonedState = new GameState(_deck);
             clonedState.CurrentPlayerTurn = CurrentPlayerTurn;
@@ -112,6 +113,7 @@ namespace TichuAI
             Array.Copy(_tricks, clonedState._tricks, _tricks.Length);
             clonedState._currentTrick = new List<Play>(_currentTrick);
             clonedState._playHistory = new List<Play>(_playHistory);
+            clonedState._random = _random;
             return clonedState;
         }
 
@@ -204,9 +206,11 @@ namespace TichuAI
 
         public Play GetRandomPlay()
         {
-            Random random = new Random();
+            if (_random == null)
+                _random = new Random();
+
             var plays = GetPlays();
-            return plays[random.Next(plays.Count)];
+            return plays[_random.Next(plays.Count)];
         }
 
         /// <summary>
