@@ -31,7 +31,6 @@ namespace TichuAI
             for (int i = 0; i < childCount; i++)
             {
                 SearchNode<Move> child = node.GetChild(i);
-                // double exploitation = (double)child.Value / ((double)child.VisitCount + Double.Epsilon);
                 double exploitation = (double)child.Value / (double)child.VisitCount;
                 double exploration = Math.Sqrt(Math.Log((double)node.VisitCount + 1) / (double)child.VisitCount);
                 double uctScore = exploitation + UctK * exploration;
