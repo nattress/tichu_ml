@@ -136,5 +136,14 @@ namespace TichuAI
             
             return 0;
         }
+        public override bool Equals(object obj)
+        {
+            return CompareTo(obj) == 0;
+        }
+
+        public override int GetHashCode()
+        {
+            return ((int)Suit << 16) ^ ((int)Rank << 8) ^ (int)Special;
+        }
     }
 }

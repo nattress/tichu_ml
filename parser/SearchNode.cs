@@ -34,7 +34,7 @@ namespace TichuAI
 
             if (_plays.Count == 0)
             {
-                _plays = (List<Move>)State.GetPlays();
+                _plays = (IList<Move>)State.GetPlays();
                 _plays.Shuffle();
             }
 

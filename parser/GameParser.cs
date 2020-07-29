@@ -175,7 +175,7 @@ namespace TichuAI
                 else if (line.StartsWith("Drache an: "))
                 {
                     string dragonPlayer = line.Substring(11);
-                    hand.Plays.Add(Play.Dragon(IndexFromPlayerTag(dragonPlayer)));
+                    hand.Plays.Add(Play.GiveDragon(IndexFromPlayerTag(dragonPlayer)));
                 }
                 else if (line.StartsWith("Tichu: "))
                 {

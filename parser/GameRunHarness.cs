@@ -10,15 +10,18 @@ namespace TichuAI
     {
         public static void Run(int numGames)
         {
+            Random random = new Random();
             int[] cumulativeTrickCounts = new int[4]; // [playerId]
             IPlayGenerator<Play>[] playGenerators = new IPlayGenerator<Play>[4];
-            playGenerators[0] = new Mcts<Play>(10000, 50);
+            //playGenerators[0] = new MultiThreadedMcts<Play>(100000, 50, random, 8);
+            playGenerators[0] = new Mcts<Play>(10000, 50, random);
             playGenerators[1] = new RandomPlayGenerator<Play>();
             playGenerators[2] = new HighestCardPlayGenerator();
             playGenerators[3] = new HighestCardPlayGenerator();
+            Logger.Log.Enabled = true;
             for (int gameNumber = 0; gameNumber < numGames; gameNumber++)
             {
-                var gameState = GameRunHarness.SetupFourPlayerGame();
+                var gameState = GameRunHarness.SetupFourPlayerGame(random);
                 
                 if (true)
                 {
@@ -60,12 +63,11 @@ namespace TichuAI
             }
         }
 
-        public static GameState SetupFourPlayerGame()
+        public static GameState SetupFourPlayerGame(Random random)
         {
             Deck deck = Deck.CreateWithoutSpecials();
-            GameState gameState = new GameState(deck);
+            GameState gameState = new GameState(deck, random);
 
-            Random random = new Random();
             gameState.SetCurrentPlayer(random.Next(4));
             gameState.Players = new PlayerState[4];
             for (int i = 0; i < 4; i++)

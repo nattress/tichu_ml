@@ -7,8 +7,9 @@ namespace TichuAI
     {
         static void Main(string[] args)
         {
+            SixNimmtHarness.Run(1);
             // TicTacToeHarness.Run(100);
-            GameRunHarness.Run(100);
+            // GameRunHarness.Run(100);
 
             //int i = 7462;
             // for (int i = 1; i < 2000000; i++)

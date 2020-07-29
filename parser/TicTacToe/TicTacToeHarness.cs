@@ -46,12 +46,12 @@ namespace TichuAI
             int[] wins = new int[2];
             int draws = 0;
             IPlayGenerator<TicTacToePlay>[] playGenerators = new IPlayGenerator<TicTacToePlay>[2];
-            playGenerators[0] = new Mcts<TicTacToePlay>(10000, 20);
+            playGenerators[0] = new Mcts<TicTacToePlay>(10000, 20, random);
+            playGenerators[1] = new Mcts<TicTacToePlay>(10000, 20, random);
             // playGenerators[1] = new RandomPlayGenerator<TicTacToePlay>();
             // playGenerators[0] = new ConsoleInputTicTacToePlayGenerator();
             // playGenerators[0] = new RandomPlayGenerator<TicTacToePlay>();
-            playGenerators[1] = new Mcts<TicTacToePlay>(10000, 20);
-            //Logger.Log.Enabled = true;
+            // Logger.Log.Enabled = true;
             for (int iteration = 0; iteration < iterations; iteration++)
             {
                 var state = CreateNewGame(random, 1);

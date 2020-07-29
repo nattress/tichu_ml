@@ -64,12 +64,9 @@ namespace TichuAI
 
     public class GameState : IGameState<Play>
     {
-        // Player cards
-        // Cards that have been played
-        // Current scores
-        // Target score
-        private Deck _deck;
+        public HashSet<Card> RemainingCards = new HashSet<Card>();
         public HashSet<Card> PlayedCards = new HashSet<Card>();
+        public HashSet<Card> RemainingPlayoutCards = new HashSet<Card>();
         public PlayerState[] Players;
         public int PlayerCount => Players.Length;
         /// <summary>
@@ -82,10 +79,13 @@ namespace TichuAI
         private List<Play> _playHistory = new List<Play>();
         private Random _random = null;
 
-        public GameState(Deck deck)
+        public GameState(Deck deck, Random random)
         {
-            _deck = deck;
+            RemainingCards = new HashSet<Card>(deck.Cards);
+            _random = random;
         }
+
+        private GameState() {}
 
 #region IGameState implementations
         public bool GameOver() => PlayedCards.Count == 52;
@@ -93,6 +93,7 @@ namespace TichuAI
         public void SetPointOfViewPlayer(int player)
         {
             _pointOfViewPlayer = player;
+            RemainingPlayoutCards = new HashSet<Card>(RemainingCards.Except(Players[_pointOfViewPlayer].Cards));
         }
 
         public void SetCurrentPlayer(int player)
@@ -102,9 +103,11 @@ namespace TichuAI
 
         public IGameState<Play> Clone()
         {
-            GameState clonedState = new GameState(_deck);
+            GameState clonedState = new GameState();
             clonedState.CurrentPlayerTurn = CurrentPlayerTurn;
             clonedState.PlayedCards = new HashSet<Card>(PlayedCards);
+            clonedState.RemainingCards = new HashSet<Card>(RemainingCards);
+            clonedState.RemainingPlayoutCards = new HashSet<Card>(RemainingPlayoutCards);
             clonedState.Players = new PlayerState[PlayerCount];
             for (int i = 0; i < PlayerCount; i++)
             {
@@ -114,6 +117,7 @@ namespace TichuAI
             clonedState._currentTrick = new List<Play>(_currentTrick);
             clonedState._playHistory = new List<Play>(_playHistory);
             clonedState._random = _random;
+            clonedState._pointOfViewPlayer = _pointOfViewPlayer;
             return clonedState;
         }
 
@@ -124,8 +128,16 @@ namespace TichuAI
             
             Debug.Assert(!PlayedCards.Contains(play.Cards[0]));
             PlayedCards.Add(play.Cards[0]);
+            RemainingCards.Remove(play.Cards[0]);
             if (CurrentPlayerTurn == _pointOfViewPlayer)
+            {
                 Players[CurrentPlayerTurn].Cards.Remove(play.Cards[0]);
+            }
+            else
+            {
+                RemainingPlayoutCards.Remove(play.Cards[0]);
+            }
+                
             
             if (_currentTrick.Count == 4)
             {
@@ -192,12 +204,10 @@ namespace TichuAI
                 // from the point-of-view player's hand since from the AI agent's pov those cards are
                 // determined (ie, we're not cheating by looking at their hand here).
                 // We could use a more sophisticated selection policy here to guide the search.
-                foreach (var card in _deck.Cards)
+                //foreach (var card in RemainingCards.Except(Players[_pointOfViewPlayer].Cards))
+                foreach (var card in RemainingPlayoutCards)
                 {
-                    if (!PlayedCards.Contains(card) && !Players[_pointOfViewPlayer].Cards.Contains(card))
-                    {
-                        plays.Add(Play.PlayCards(CurrentPlayerTurn, new Card[] {card}));
-                    }
+                    plays.Add(Play.PlayCards(CurrentPlayerTurn, new Card[] {card}));
                 }
             }
             
@@ -206,9 +216,6 @@ namespace TichuAI
 
         public Play GetRandomPlay()
         {
-            if (_random == null)
-                _random = new Random();
-
             var plays = GetPlays();
             return plays[_random.Next(plays.Count)];
         }

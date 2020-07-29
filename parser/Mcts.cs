@@ -1,8 +1,89 @@
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace TichuAI
 {
+    /// <summary>
+    /// MCTS parallelized at the root level. Perform N independent searches and select the best result from them all.
+    /// </summary>
+    public class MultiThreadedMcts<Move> : Mcts<Move>, IPlayGenerator<Move> where Move : IComparable
+    {
+        private readonly int _threadCount;
+
+        public MultiThreadedMcts(int numIterations, int simulationDepth, Random random, int threadCount) : base(numIterations, simulationDepth, random)
+        {
+            _threadCount = threadCount;
+        }
+
+        public override Move FindPlay(IGameState<Move> initialState)
+        {
+            ConcurrentBag<Move> bag = new ConcurrentBag<Move>();
+
+            ThreadPool.GetMinThreads(out int workerThreads, out int completionThreads);
+            if (workerThreads < _threadCount)
+            {
+                ThreadPool.SetMinThreads(_threadCount, completionThreads);
+            }
+
+            //ManualResetEventSlim mre = new ManualResetEventSlim();
+            ManualResetEvent[] waitEvents = new ManualResetEvent[_threadCount];
+            for (int i = 0; i < _threadCount; i++)
+            {
+                waitEvents[i] = new ManualResetEvent(false);
+                ThreadPool.QueueUserWorkItem( waitEventIndex => 
+                {
+                    var rootNode = Search(initialState);
+                    bag.Add(GetMostVisitedChild(rootNode).Play);
+                    waitEvents[(int)waitEventIndex].Set();
+                }, i);
+            }
+
+            WaitHandle.WaitAll(waitEvents);
+            return PickWinningMove(bag.ToArray());
+        }
+
+        // Selects the most-voted move by all the agents. If there's a tie, pick it randomly
+        private Move PickWinningMove(Move[] moves)
+        {
+            List<Move> sortedMoves = new List<Move>(moves);
+            sortedMoves.Sort();
+            List<int> counts = new List<int>();
+            List<Move> countMoves = new List<Move>();
+
+            Move currentMove = moves[0];
+            int count = 0;
+            foreach (var m in sortedMoves)
+            {
+                if (currentMove.CompareTo(m) == 0)
+                {
+                    ++count;
+                }
+                else
+                {
+                    countMoves.Add(currentMove);
+                    counts.Add(count);
+                    currentMove = m;
+                    count = 1;
+                }
+            }
+
+            // Add the last run of counts
+            countMoves.Add(currentMove);
+            counts.Add(count);
+
+            int maxVoteCount = counts.Max();
+            var tiedWins = countMoves.Where( (move, index) =>
+            {
+                return counts[index] == maxVoteCount;
+            });
+
+            return tiedWins.ElementAt(_random.Next(tiedWins.Count()));
+        }
+    }
     public class Mcts<Move> : IPlayGenerator<Move>
     {
         /// <summary>
@@ -13,11 +94,13 @@ namespace TichuAI
         private readonly int _simulationDepth;
         int _exploitationCount = 0;
         int _explorationCount = 0;
+        protected Random _random;
 
-        public Mcts(int numIterations, int simulationDepth)
+        public Mcts(int numIterations, int simulationDepth, Random random)
         {
             _numIterations = numIterations;
             _simulationDepth = simulationDepth;
+            _random = random;
         }
 
         private SearchNode<Move> GetBestUctChild(SearchNode<Move> node, double UctK)
@@ -49,7 +132,7 @@ namespace TichuAI
             return bestNode;
         }
 
-        private SearchNode<Move> GetMostVisitedChild(SearchNode<Move> node)
+        protected SearchNode<Move> GetMostVisitedChild(SearchNode<Move> node)
         {
             int maxVisitCount = -1;
             SearchNode<Move> bestNode = null;
@@ -78,7 +161,13 @@ namespace TichuAI
             return bestNode;
         }
 
-        public Move FindPlay(IGameState<Move> initialState)
+        public virtual Move FindPlay(IGameState<Move> initialState)
+        {
+            var root = Search(initialState);
+            return GetMostVisitedChild(root).Play;
+        }
+
+        protected SearchNode<Move> Search(IGameState<Move> initialState)
         {
             SearchNode<Move> rootNode = new SearchNode<Move>(initialState, parent: null);
             
@@ -141,8 +230,9 @@ namespace TichuAI
                 iterations++;
             }
             //Console.WriteLine(rootNode.PrettyPrint());
-            var result = GetMostVisitedChild(rootNode).Play;
-            return result;
+            //var result = GetMostVisitedChild(rootNode).Play;
+
+            return rootNode;
         }
     }
 }
