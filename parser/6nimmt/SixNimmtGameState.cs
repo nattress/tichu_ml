@@ -352,11 +352,6 @@ namespace TichuAI
             {
                 return true;
             }
-
-            if (_scores.All(x => x < 0))
-            {
-                Console.WriteLine("Why");
-            }
             return false;
         } 
 
