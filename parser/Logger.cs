@@ -2,24 +2,11 @@ using System;
 
 namespace TichuAI
 {
-    enum Category
-    {
-
-    }
-
-    enum Verbosity
-    {
-
-    }
-
     public class Logger
     {
         private static Logger s_log = new Logger();
 
-        private Logger()
-        {
-
-        }
+        private Logger() {}
         public bool Enabled { get; set; }
 
         public static Logger Log => s_log;

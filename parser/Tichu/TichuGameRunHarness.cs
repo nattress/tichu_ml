@@ -6,7 +6,7 @@ namespace TichuAI
     /// Runs a series of games with configured AI agents and measures the win statistics
     /// of each agent.
     /// </summary>
-    public class GameRunHarness
+    public class TichuGameRunHarness
     {
         public static void Run(int numGames)
         {
@@ -21,7 +21,7 @@ namespace TichuAI
             Logger.Log.Enabled = true;
             for (int gameNumber = 0; gameNumber < numGames; gameNumber++)
             {
-                var gameState = GameRunHarness.SetupFourPlayerGame(random);
+                var gameState = TichuGameRunHarness.SetupFourPlayerGame(random);
                 
                 if (true)
                 {
@@ -63,15 +63,15 @@ namespace TichuAI
             }
         }
 
-        public static GameState SetupFourPlayerGame(Random random)
+        public static TichuGameState SetupFourPlayerGame(Random random)
         {
-            Deck deck = Deck.CreateWithoutSpecials();
-            GameState gameState = new GameState(deck, random);
+            TichuDeck deck = TichuDeck.CreateWithoutSpecials();
+            TichuGameState gameState = new TichuGameState(deck, random);
 
             gameState.SetCurrentPlayer(random.Next(4));
-            gameState.Players = new PlayerState[4];
+            gameState.Players = new TichuPlayerState[4];
             for (int i = 0; i < 4; i++)
-                gameState.Players[i] = new PlayerState();
+                gameState.Players[i] = new TichuPlayerState();
 
             int player = 0;
             while (deck.Count > 0)

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace TichuAI
 {
-    public class Deck
+    public class TichuDeck
     {
         List<Card> _allCards;
         Stack<Card> _deck = new Stack<Card>();
@@ -14,7 +14,7 @@ namespace TichuAI
         public Card DealCard() => _deck.Pop();
         public IEnumerable<Card> Cards => _allCards;
 
-        public Deck(IEnumerable<Card> allCards)
+        public TichuDeck(IEnumerable<Card> allCards)
         {
             _allCards = new List<Card>(allCards);
         }
@@ -22,7 +22,7 @@ namespace TichuAI
         /// <summary>
         /// Creates a random deck of cards excluding dog, dragon, phoenix, mahjong
         /// </summary>
-        public static Deck CreateWithoutSpecials()
+        public static TichuDeck CreateWithoutSpecials()
         {
             List<Card> drawPool = new List<Card>();
             for (int suit = 0; suit < 4; suit++)
@@ -33,7 +33,7 @@ namespace TichuAI
                     drawPool.Add(c);
                 }
             }
-            Deck deck = new Deck(drawPool);
+            TichuDeck deck = new TichuDeck(drawPool);
             Random random = new Random();
             for (int i = 0; i < 52; i++)
             {
@@ -46,15 +46,15 @@ namespace TichuAI
         }
     }
 
-    public class PlayerState
+    public class TichuPlayerState
     {
         public List<Card> Cards = new List<Card>();
         public bool TichuCall;
         public bool GrandCall;
 
-        public PlayerState Clone()
+        public TichuPlayerState Clone()
         {
-            PlayerState clonedState = new PlayerState();
+            TichuPlayerState clonedState = new TichuPlayerState();
             clonedState.TichuCall = TichuCall;
             clonedState.GrandCall = GrandCall;
             clonedState.Cards = new List<Card>(Cards);
@@ -62,12 +62,12 @@ namespace TichuAI
         }
     }
 
-    public class GameState : IGameState<Play>
+    public class TichuGameState : IGameState<Play>
     {
         public HashSet<Card> RemainingCards = new HashSet<Card>();
         public HashSet<Card> PlayedCards = new HashSet<Card>();
         public HashSet<Card> RemainingPlayoutCards = new HashSet<Card>();
-        public PlayerState[] Players;
+        public TichuPlayerState[] Players;
         public int PlayerCount => Players.Length;
         /// <summary>
         /// Index of which player plays next
@@ -79,13 +79,13 @@ namespace TichuAI
         private List<Play> _playHistory = new List<Play>();
         private Random _random = null;
 
-        public GameState(Deck deck, Random random)
+        public TichuGameState(TichuDeck deck, Random random)
         {
             RemainingCards = new HashSet<Card>(deck.Cards);
             _random = random;
         }
 
-        private GameState() {}
+        private TichuGameState() {}
 
 #region IGameState implementations
         public bool GameOver() => PlayedCards.Count == 52;
@@ -103,12 +103,12 @@ namespace TichuAI
 
         public IGameState<Play> Clone()
         {
-            GameState clonedState = new GameState();
+            TichuGameState clonedState = new TichuGameState();
             clonedState.CurrentPlayerTurn = CurrentPlayerTurn;
             clonedState.PlayedCards = new HashSet<Card>(PlayedCards);
             clonedState.RemainingCards = new HashSet<Card>(RemainingCards);
             clonedState.RemainingPlayoutCards = new HashSet<Card>(RemainingPlayoutCards);
-            clonedState.Players = new PlayerState[PlayerCount];
+            clonedState.Players = new TichuPlayerState[PlayerCount];
             for (int i = 0; i < PlayerCount; i++)
             {
                 clonedState.Players[i] = Players[i].Clone();
