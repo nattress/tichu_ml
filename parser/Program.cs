@@ -7,7 +7,21 @@ namespace TichuAI
     {
         static void Main(string[] args)
         {
-            SixNimmtHarness.Run(1);
+            string game = "";
+            if (args.Length > 0)
+            {
+                game = args[0];
+            }
+
+            if (game.Equals("6nimmt"))
+            {
+                SixNimmtHarness.Run(1);
+            }
+            else if (game.Equals("6nimmthelp", StringComparison.OrdinalIgnoreCase))
+            {
+                SixNimmtSuggestMoveHarness.Run();
+            }
+            
             // TicTacToeHarness.Run(100);
             // GameRunHarness.Run(100);
 

@@ -263,7 +263,11 @@ namespace TichuAI
                 CardToPlayerDictionary.Add(play, CurrentPlayerTurn);
                 if (CurrentPlayerTurn == _pointOfViewPlayer)
                 {
-                    PlayerCards[CurrentPlayerTurn].Remove(play);
+                    // For move suggest where opponent cards aren't in the state PlayerCards is empty so no need to remove
+                    if (PlayerCards[CurrentPlayerTurn].Count > 0)
+                    {
+                        PlayerCards[CurrentPlayerTurn].Remove(play);
+                    }
                 }
                 else
                 {
@@ -361,6 +365,12 @@ namespace TichuAI
             {
                 if (CurrentPlayerTurn == _pointOfViewPlayer)
                 {
+                    // For move suggest where opponent cards aren't in the state
+                    if (PlayerCards[CurrentPlayerTurn].Count == 0)
+                    {
+                        return new List<int>(_remainingCards);
+                    }
+
                     // AI player can use any card in their hand
                     return new List<int>(PlayerCards[CurrentPlayerTurn]);
                 }
