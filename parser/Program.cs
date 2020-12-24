@@ -21,6 +21,10 @@ namespace TichuAI
             {
                 SixNimmtSuggestMoveHarness.Run();
             }
+            else if (game.Equals("tichu"))
+            {
+                TichuGameRunHarness.Run(1);
+            }
             
             // TicTacToeHarness.Run(100);
             // GameRunHarness.Run(100);
