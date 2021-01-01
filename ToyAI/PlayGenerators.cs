@@ -18,7 +18,6 @@ namespace TichuAI
     {
         public Play FindPlay(IGameState<Play> gameState)
         {
-            //var plays = gameState.GetPlays();
             CardRank highestRank = CardRank.Two;
             Play highestPlay = null;
             foreach (var play in gameState.GetPlays())
