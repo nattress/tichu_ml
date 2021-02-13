@@ -24,10 +24,10 @@ namespace TichuAI
 
     class ParsedHand
     {
-        public Card[][] GrandTichuCards = new Card[][] { new Card[8], new Card[8], new Card[8], new Card[8] };
-        public Card[][] StartingCards = new Card[][] { new Card[14], new Card[14], new Card[14], new Card[14] };
+        public TichuCard[][] GrandTichuCards = new TichuCard[][] { new TichuCard[8], new TichuCard[8], new TichuCard[8], new TichuCard[8] };
+        public TichuCard[][] StartingCards = new TichuCard[][] { new TichuCard[14], new TichuCard[14], new TichuCard[14], new TichuCard[14] };
         // For each player, the 3 cards they passed: left, across, right
-        public Card[][] ExchangedCards = new Card[][] { new Card[3], new Card[3], new Card[3], new Card[3] };
+        public TichuCard[][] ExchangedCards = new TichuCard[][] { new TichuCard[3], new TichuCard[3], new TichuCard[3], new TichuCard[3] };
         public bool[] HasBomb = new bool[4];
         public List<Play> Plays = new List<Play>();
         public int[] Scores = new int[2];

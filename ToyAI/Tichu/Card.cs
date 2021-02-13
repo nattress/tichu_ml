@@ -41,13 +41,13 @@ namespace TichuAI
         Dragon
     }
 
-    public class Card : IComparable
+    public class TichuCard : IComparable
     {
         public readonly CardSuit Suit;
         public readonly CardRank Rank;
         public readonly SpecialCard Special;
 
-        public Card(CardSuit suit, CardRank rank, SpecialCard special = SpecialCard.None)
+        public TichuCard(CardSuit suit, CardRank rank, SpecialCard special = SpecialCard.None)
         {
             Suit = suit;
             Rank = rank;
@@ -95,16 +95,16 @@ namespace TichuAI
             return result;
         }
 
-        public static IEnumerable<Card> GetCardsWithSuit(IEnumerable<Card> cards, CardSuit suit)
+        public static IEnumerable<TichuCard> GetCardsWithSuit(IEnumerable<TichuCard> cards, CardSuit suit)
         {
-            List<Card> result = null;
+            List<TichuCard> result = null;
 
             foreach (var card in cards)
             {
                 if (card.Suit == suit)
                 {
                     if (result == null)
-                        result = new List<Card>();
+                        result = new List<TichuCard>();
 
                     result.Add(card);
                 }
@@ -113,9 +113,9 @@ namespace TichuAI
             return result;
         }
 
-        public static string PrintCardsSortedBySuit(IEnumerable<Card> cards)
+        public static string PrintCardsSortedBySuit(IEnumerable<TichuCard> cards)
         {
-            List<Card> cardList = new List<Card>(cards);
+            List<TichuCard> cardList = new List<TichuCard>(cards);
             cardList.Sort();
             return string.Join(" ", cardList);
         }
@@ -124,7 +124,7 @@ namespace TichuAI
         {
             if (obj == null) return 1;
 
-            Card other = obj as Card;
+            TichuCard other = obj as TichuCard;
             if (Suit != other.Suit)
                 return Suit > other.Suit ? 1 : -1;
 

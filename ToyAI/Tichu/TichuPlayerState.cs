@@ -5,7 +5,7 @@ namespace TichuAI
 {
     public class TichuPlayerState
     {
-        public List<Card> Cards = new List<Card>();
+        public List<TichuCard> Cards = new List<TichuCard>();
         public bool TichuCall;
         public bool GrandCall;
 
@@ -14,7 +14,7 @@ namespace TichuAI
             TichuPlayerState clonedState = new TichuPlayerState();
             clonedState.TichuCall = TichuCall;
             clonedState.GrandCall = GrandCall;
-            clonedState.Cards = new List<Card>(Cards);
+            clonedState.Cards = new List<TichuCard>(Cards);
             return clonedState;
         }
     }

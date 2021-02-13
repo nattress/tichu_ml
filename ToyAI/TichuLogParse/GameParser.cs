@@ -169,7 +169,7 @@ namespace TichuAI
                 // Wish
                 if (line.StartsWith("Wunsch:"))
                 {
-                    Card wishCard = new Card(default(CardSuit), RankFromParsedString(line.Substring(7)));
+                    TichuCard wishCard = new TichuCard(default(CardSuit), RankFromParsedString(line.Substring(7)));
                     hand.Plays.Add(Play.Wish(mahjongPlayer, wishCard));
                 }
                 else if (line.StartsWith("Drache an: "))
@@ -198,7 +198,7 @@ namespace TichuAI
                     else
                     {
                         // Play some number of cards
-                        List<Card> cards = new List<Card>();
+                        List<TichuCard> cards = new List<TichuCard>();
                         foreach (var x in playLine.AsSpan(1))
                         {
                             cards.Add(GetCard(x));
@@ -226,7 +226,7 @@ namespace TichuAI
         /// Maps (N)Player -> N
         /// </summary>
         private static int IndexFromPlayerTag(string playerTag) => int.Parse(playerTag.Substring(1,1));
-        private static Card GetCard(string parsedCard)
+        private static TichuCard GetCard(string parsedCard)
         {
             SpecialCard special = SpecialCard.None;
             // Early out for specials
@@ -268,7 +268,7 @@ namespace TichuAI
             // Rank is 1 or 2 characters
             string rank = parsedCard.Substring(1);
             CardRank cardRank = (CardRank)RankFromParsedString(rank);
-            return new Card(cardSuit, cardRank, special);
+            return new TichuCard(cardSuit, cardRank, special);
         }
 
         private static CardRank RankFromParsedString(string rank)

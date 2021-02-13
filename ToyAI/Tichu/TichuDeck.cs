@@ -5,15 +5,15 @@ namespace TichuAI
 {
     public class TichuDeck
     {
-        List<Card> _allCards;
-        Stack<Card> _deck = new Stack<Card>();
+        List<TichuCard> _allCards;
+        Stack<TichuCard> _deck = new Stack<TichuCard>();
         public int Count => _deck.Count;
-        public Card DealCard() => _deck.Pop();
-        public IEnumerable<Card> Cards => _allCards;
+        public TichuCard DealCard() => _deck.Pop();
+        public IEnumerable<TichuCard> Cards => _allCards;
 
-        public TichuDeck(IEnumerable<Card> allCards)
+        public TichuDeck(IEnumerable<TichuCard> allCards)
         {
-            _allCards = new List<Card>(allCards);
+            _allCards = new List<TichuCard>(allCards);
         }
 
         /// <summary>
@@ -21,12 +21,12 @@ namespace TichuAI
         /// </summary>
         public static TichuDeck CreateWithoutSpecials()
         {
-            List<Card> drawPool = new List<Card>();
+            List<TichuCard> drawPool = new List<TichuCard>();
             for (int suit = 0; suit < 4; suit++)
             {
                 for (int rank = 0; rank < 13; rank++)
                 {
-                    Card c = new Card((CardSuit)suit, (CardRank)rank);
+                    TichuCard c = new TichuCard((CardSuit)suit, (CardRank)rank);
                     drawPool.Add(c);
                 }
             }

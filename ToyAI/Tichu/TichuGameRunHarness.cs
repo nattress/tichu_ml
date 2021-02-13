@@ -28,7 +28,7 @@ namespace TichuAI
                     Logger.Log.WriteLine("Starting cards:");
                     for (int i = 0; i < 4; i++)
                     {
-                        Logger.Log.WriteLine($"Player {i} {Card.PrintCardsSortedBySuit(gameState.Players[i].Cards)}");
+                        Logger.Log.WriteLine($"Player {i} {TichuCard.PrintCardsSortedBySuit(gameState.Players[i].Cards)}");
                     }
                 }
                 while (true)

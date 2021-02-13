@@ -28,9 +28,9 @@ namespace TichuAI
 
     public class Play : IComparable
     {
-        class PlayComparer : IEqualityComparer<(int player, PlayType playType, Card[] cards)>
+        class PlayComparer : IEqualityComparer<(int player, PlayType playType, TichuCard[] cards)>
         {
-            public bool Equals((int player, PlayType playType, Card[] cards) left, (int player, PlayType playType, Card[] cards) right)
+            public bool Equals((int player, PlayType playType, TichuCard[] cards) left, (int player, PlayType playType, TichuCard[] cards) right)
             {  
                 if (left.player != right.player)
                     return false;
@@ -53,14 +53,14 @@ namespace TichuAI
                 return true;
             }
 
-            public int GetHashCode((int, PlayType, Card[]) key)
+            public int GetHashCode((int, PlayType, TichuCard[]) key)
             {
                 unchecked
                 {
                     int hash = 17;
                     hash = hash * 23 + key.Item1.GetHashCode();
                     hash = hash * 23 + key.Item2.GetHashCode();
-                    foreach (Card c in key.Item3)
+                    foreach (TichuCard c in key.Item3)
                     {
                         hash = hash * 23 + c.GetHashCode();
                     }
@@ -69,11 +69,11 @@ namespace TichuAI
             }
         }
 
-        static ConcurrentDictionary<(int, PlayType, Card[]), Play> _internedPlays = new ConcurrentDictionary<(int, PlayType, Card[]), Play>(new PlayComparer());
+        static ConcurrentDictionary<(int, PlayType, TichuCard[]), Play> _internedPlays = new ConcurrentDictionary<(int, PlayType, TichuCard[]), Play>(new PlayComparer());
         public readonly int Player;
         public readonly PlayType PlayType;
-        public readonly Card[] Cards;
-        private Play(int player, PlayType playType, Card[] cards = null)
+        public readonly TichuCard[] Cards;
+        private Play(int player, PlayType playType, TichuCard[] cards = null)
         {
             Player = player;
             PlayType = playType;
@@ -82,10 +82,10 @@ namespace TichuAI
 
         public static Play Tichu(int player) => _internedPlays.GetOrAdd((player, PlayType.Tichu, null), (x) => new Play(player, PlayType.Tichu));
         public static Play GrandTichu(int player) => new Play(player, PlayType.GrandTichu);
-        public static Play Wish(int player, Card card) => new Play(player, PlayType.Wish, new Card[] {card});
+        public static Play Wish(int player, TichuCard card) => new Play(player, PlayType.Wish, new TichuCard[] {card});
         public static Play Pass(int player) => new Play(player, PlayType.Pass);
         public static Play GiveDragon(int player) => new Play(player, PlayType.GotDragon);
-        public static Play PlayCards(int player, Card[] cards) => _internedPlays.GetOrAdd((player, PlayType.PlayShape, cards), (x) => new Play(player, PlayType.PlayShape, cards));
+        public static Play PlayCards(int player, TichuCard[] cards) => _internedPlays.GetOrAdd((player, PlayType.PlayShape, cards), (x) => new Play(player, PlayType.PlayShape, cards));
 
         public override string ToString()
         {
@@ -128,7 +128,7 @@ namespace TichuAI
                 int hash = 17;
                 hash = hash * 23 + Player.GetHashCode();
                 hash = hash * 23 + PlayType.GetHashCode();
-                foreach (Card c in Cards)
+                foreach (TichuCard c in Cards)
                 {
                     hash = hash * 23 + c.GetHashCode();
                 }

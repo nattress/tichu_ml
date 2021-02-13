@@ -8,9 +8,9 @@ namespace TichuAI
 {
     public class TichuGameState : IGameState<Play>
     {
-        public HashSet<Card> RemainingCards = new HashSet<Card>();
-        public HashSet<Card> PlayedCards = new HashSet<Card>();
-        public HashSet<Card> RemainingPlayoutCards = new HashSet<Card>();
+        public HashSet<TichuCard> RemainingCards = new HashSet<TichuCard>();
+        public HashSet<TichuCard> PlayedCards = new HashSet<TichuCard>();
+        public HashSet<TichuCard> RemainingPlayoutCards = new HashSet<TichuCard>();
         public TichuPlayerState[] Players;
         public int PlayerCount => Players.Length;
         /// <summary>
@@ -25,7 +25,7 @@ namespace TichuAI
 
         public TichuGameState(TichuDeck deck, Random random)
         {
-            RemainingCards = new HashSet<Card>(deck.Cards);
+            RemainingCards = new HashSet<TichuCard>(deck.Cards);
             _random = random;
         }
 
@@ -37,7 +37,7 @@ namespace TichuAI
         public void SetPointOfViewPlayer(int player)
         {
             _pointOfViewPlayer = player;
-            RemainingPlayoutCards = new HashSet<Card>(RemainingCards.Except(Players[_pointOfViewPlayer].Cards));
+            RemainingPlayoutCards = new HashSet<TichuCard>(RemainingCards.Except(Players[_pointOfViewPlayer].Cards));
         }
 
         public void SetCurrentPlayer(int player)
@@ -49,9 +49,9 @@ namespace TichuAI
         {
             TichuGameState clonedState = new TichuGameState();
             clonedState.CurrentPlayerTurn = CurrentPlayerTurn;
-            clonedState.PlayedCards = new HashSet<Card>(PlayedCards);
-            clonedState.RemainingCards = new HashSet<Card>(RemainingCards);
-            clonedState.RemainingPlayoutCards = new HashSet<Card>(RemainingPlayoutCards);
+            clonedState.PlayedCards = new HashSet<TichuCard>(PlayedCards);
+            clonedState.RemainingCards = new HashSet<TichuCard>(RemainingCards);
+            clonedState.RemainingPlayoutCards = new HashSet<TichuCard>(RemainingPlayoutCards);
             clonedState.Players = new TichuPlayerState[PlayerCount];
             for (int i = 0; i < PlayerCount; i++)
             {
@@ -122,12 +122,12 @@ namespace TichuAI
                 if (_currentTrick.Count > 0)
                 {
                     // Try and follow suit. If we have none of that suit, fall through into allowing all cards in our hand
-                    var suitCards = Card.GetCardsWithSuit(Players[CurrentPlayerTurn].Cards, _currentTrick[0].Cards[0].Suit);
+                    var suitCards = TichuCard.GetCardsWithSuit(Players[CurrentPlayerTurn].Cards, _currentTrick[0].Cards[0].Suit);
                     if (suitCards != null)
                     {
                         foreach (var card in suitCards)
                         {
-                            plays.Add(Play.PlayCards(CurrentPlayerTurn, new Card[] {card}));
+                            plays.Add(Play.PlayCards(CurrentPlayerTurn, new TichuCard[] {card}));
                         }
                     }
                 }
@@ -138,7 +138,7 @@ namespace TichuAI
                     // Make correct plays from our own hand 
                     foreach (var card in Players[CurrentPlayerTurn].Cards)
                     {
-                        plays.Add(Play.PlayCards(CurrentPlayerTurn, new Card[] {card}));
+                        plays.Add(Play.PlayCards(CurrentPlayerTurn, new TichuCard[] {card}));
                     }
                 }
             }
@@ -151,7 +151,7 @@ namespace TichuAI
                 //foreach (var card in RemainingCards.Except(Players[_pointOfViewPlayer].Cards))
                 foreach (var card in RemainingPlayoutCards)
                 {
-                    plays.Add(Play.PlayCards(CurrentPlayerTurn, new Card[] {card}));
+                    plays.Add(Play.PlayCards(CurrentPlayerTurn, new TichuCard[] {card}));
                 }
             }
             
@@ -197,7 +197,7 @@ namespace TichuAI
                 {
                     sb.Append($" {player}  ");
                 }
-                sb.AppendLine(Card.PrintCardsSortedBySuit(Players[player].Cards));
+                sb.AppendLine(TichuCard.PrintCardsSortedBySuit(Players[player].Cards));
             }
 
             sb.AppendLine(string.Join(" ", _currentTrick.Select(play => play.ToString())));
