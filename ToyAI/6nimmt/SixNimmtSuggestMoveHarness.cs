@@ -7,6 +7,7 @@ namespace TichuAI
     public class SixNimmtSuggestMoveHarness
     {
         private const int PlayerCount = 5;
+        private const bool ProMode = true;
         public static void Run()
         {
             Random random = new Random();
@@ -22,7 +23,7 @@ namespace TichuAI
                 double[] scores = null;
                 while (true)
                 {
-                    var state = CreateNewGame(random, scores);
+                    var state = CreateNewGame(random, scores, SixNimmtSuggestMoveHarness.ProMode);
 
                     if (true)
                     {
@@ -72,10 +73,10 @@ namespace TichuAI
             }
         }
 
-        static SixNimmtGameState CreateNewGame(Random random, double[] scores)
+        static SixNimmtGameState CreateNewGame(Random random, double[] scores, bool proMode)
         {
             SixNimmtDeck deck = SixNimmtDeck.Create();
-            SixNimmtGameState state = SixNimmtGameState.Create(random, deck, PlayerCount);
+            SixNimmtGameState state = SixNimmtGameState.Create(random, deck, PlayerCount, proMode);
 
             if (scores != null)
             {
@@ -90,7 +91,7 @@ namespace TichuAI
                 string[] handInputs = handInput.Split(" ");
                 if (handInputs.Length != 10)
                 {
-                    Console.WriteLine($"Enter 10 cards. I counted {handInput.Length}");
+                    Console.WriteLine($"Enter 10 cards. I counted {handInputs.Length}");
                     continue;
                 }
 

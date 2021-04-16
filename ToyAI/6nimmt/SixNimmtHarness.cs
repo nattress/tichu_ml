@@ -56,6 +56,7 @@ namespace TichuAI
     public class SixNimmtHarness
     {
         private const int PlayerCount = 5;
+        private const bool ProMode = true;
         public static void Run(int iterations)
         {
             Random random = new Random();
@@ -79,7 +80,7 @@ namespace TichuAI
                 double[] scores = null;
                 while (true)
                 {
-                    var state = CreateNewGame(random, scores);
+                    var state = CreateNewGame(random, scores, SixNimmtHarness.ProMode);
 
                     if (true)
                     {
@@ -141,10 +142,10 @@ namespace TichuAI
             Console.WriteLine($"Draws: {draws}");
         }
 
-        static SixNimmtGameState CreateNewGame(Random random, double[] scores)
+        static SixNimmtGameState CreateNewGame(Random random, double[] scores, bool proMode)
         {
             SixNimmtDeck deck = SixNimmtDeck.Create();
-            SixNimmtGameState state = SixNimmtGameState.Create(random, deck, PlayerCount);
+            SixNimmtGameState state = SixNimmtGameState.Create(random, deck, PlayerCount, proMode);
 
             if (scores != null)
             {

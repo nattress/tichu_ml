@@ -6,59 +6,6 @@ using System.Text;
 
 namespace TichuAI
 {
-    public class SixNimmtDeck
-    {
-        private const int DeckSize = 104;
-        int[] _shuffledCards; 
-        int[] _allCards;
-        /// <summary>
-        /// Cards are popped by incrementing the index into _shuffledCards
-        /// </summary>
-        int _shuffledCardIndex;
-        public int Count => _allCards.Length;
-        public int DealCard()
-        {
-            return _shuffledCards[_shuffledCardIndex++];
-        }
-        public IEnumerable<int> Cards => _allCards;
-
-        public SixNimmtDeck(int[] allCards)
-        {
-            _allCards = allCards;
-        }
-
-        private void Shuffle()
-        {
-            Random random = new Random();
-            _shuffledCards = new int[DeckSize];
-            Array.Copy(_allCards, _shuffledCards, DeckSize);
-            int shuffle = DeckSize;
-            while (shuffle-- > 0)
-            {
-                int replaceIndex = random.Next(shuffle);
-                int swap = _shuffledCards[shuffle];
-                _shuffledCards[shuffle] = _shuffledCards[replaceIndex];
-                _shuffledCards[replaceIndex] = swap;
-            }
-        }
-
-        /// <summary>
-        /// Creates a random deck of cards excluding dog, dragon, phoenix, mahjong
-        /// </summary>
-        public static SixNimmtDeck Create()
-        {
-            int[] unshuffled = new int[DeckSize];
-            for (int i = 0; i < DeckSize; i++)
-            {
-                unshuffled[i] = i + 1;
-            }
-            SixNimmtDeck deck = new SixNimmtDeck(unshuffled);
-            deck.Shuffle();
-
-            return deck;
-        }
-    }
-
     public enum SixNimmtInputState
     {
         CardSelection,
@@ -79,6 +26,7 @@ namespace TichuAI
         {
             public Random Random;
             public int PlayerCount;
+            public bool ProMode;
         }
 
         private SharedState _sharedState;
@@ -122,9 +70,9 @@ namespace TichuAI
 
         private SixNimmtGameState() {}
 
-        public static SixNimmtGameState Create(Random random, SixNimmtDeck deck, int playerCount)
+        public static SixNimmtGameState Create(Random random, SixNimmtDeck deck, int playerCount, bool proMode)
         {
-            return new SixNimmtGameState(new SharedState() { Random = random, PlayerCount = playerCount }, deck);
+            return new SixNimmtGameState(new SharedState() { Random = random, PlayerCount = playerCount, ProMode = proMode }, deck);
         }
 
         public int CurrentPlayerTurn { get; private set; }
@@ -176,7 +124,8 @@ namespace TichuAI
         /// Returns the current highest card on a row
         /// </summary>
         private int HighCardForRow(int row) => _board[row][_boardRowCounts[row] - 1];
-
+   
+        private int LowCardForRow(int row) => _board[row][0];
         public void SetInitialScores(double[] scores)
         {
             Debug.Assert(scores.Length == _scores.Length);
