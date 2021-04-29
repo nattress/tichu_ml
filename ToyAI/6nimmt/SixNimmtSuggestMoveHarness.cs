@@ -35,7 +35,7 @@ namespace TichuAI
 
                     while (true)
                     {
-                        if (state.CurrentPlayerTurn == 0 && state.PlayInputState == SixNimmtInputState.CardSelection)
+                        if (state.CurrentPlayerTurn == 0 && state.PlayInputState == SixNimmtInputState.SelectCard)
                         {
                             Logger.Log.WriteLine(state.ToString());
                         }

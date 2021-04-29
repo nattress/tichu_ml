@@ -8,19 +8,25 @@ namespace TichuAI
 {
     public enum SixNimmtInputState
     {
-        CardSelection,
         /// <summary>
-        /// When round contains a card lower than any of the current rows, the player who played the lowest of those cards selects a row to clear (and takes points accordingly)
+        /// Game phase where each player chooses a card to place on the board.
+        /// </summary>
+        SelectCard,
+        PlaceCards,
+        /// <summary>
+        /// During card placement, when a card is lower than any of the current row heads, the player who played the lowest of those cards selects a row to clear (and takes points accordingly)
+        /// On Pro mode, this happens if a card also can't be played on the beginning of any row.
         /// </summary>
         TakeRow
     }
 
     public class SixNimmtGameState : IGameState<int>
     {
-        public const int BoardRowCount = 4; // The standard size of a 6nimmt board
-        public const int MaxCardsPerRow = 5;
-        public const int StartingScore = 66;
+        public static readonly int BoardRowCount = 4; // The standard size of a 6nimmt board
+        public static readonly int MaxCardsPerRow = 5;
+        public static readonly int StartingScore = 66;
         private const int RowNotFound = -1;
+        private const int RowPlacementAmbiguous = -2;
 
         private class SharedState
         {
@@ -44,10 +50,11 @@ namespace TichuAI
         private HashSet<int> _remainingCards = new HashSet<int>();
         private HashSet<int> _remainingPlayoutCards = new HashSet<int>();
         public Dictionary<int, int> CardToPlayerDictionary = new Dictionary<int, int>();
+        private int _currentRoundCardsProcessingIndex = 0;
 
         private SixNimmtGameState(SharedState sharedState, SixNimmtDeck deck)
         {
-            PlayInputState = SixNimmtInputState.CardSelection;
+            PlayInputState = SixNimmtInputState.SelectCard;
             _sharedState = sharedState;
             _board = new int[BoardRowCount][];
             for (int row = 0; row < BoardRowCount; row++)
@@ -102,18 +109,63 @@ namespace TichuAI
         
         /// <summary>
         /// Given a card, where will it land when played on the board. Returns -1 if card is lower than all row high-cards.
+        /// Returns RowPlacementAmbiguous (-2) if the card could be placed in more than one location and puts the two
+        /// ambiguous rows into "ambiguousRows".
         /// </summary>
-        private int ComputeCardRow(int card)
+        private int ComputeCardRow(int card, out int[] ambiguousRows)
         {
             int closestCardRow = -1;
             int closestCard = -1;
-
+            // For pro-mode where cards can be placed on the left, too
+            int closestLowCardRow = -1;
+            int closestLowCard = 105;
+            ambiguousRows = null;
             for (int row = 0; row < BoardRowCount; row++)
             {
                 if (card > HighCardForRow(row) && HighCardForRow(row) > closestCard)
                 {
                     closestCard = HighCardForRow(row);
                     closestCardRow = row;
+                }
+                if (this._sharedState.ProMode)
+                {
+                    if (card < LowCardForRow(row) && LowCardForRow(row) < closestLowCard)
+                    {
+                        closestLowCard = LowCardForRow(row);
+                        closestLowCardRow = row;
+                    }
+                }
+            }
+
+            if (this._sharedState.ProMode)
+            {
+                if (closestCardRow == -1 && closestLowCardRow == -1)
+                {
+                    return RowNotFound;
+                }
+                else if (closestCardRow == -1)
+                {
+                    return closestLowCardRow;
+                }
+                else if (closestLowCardRow == -1)
+                {
+                    return closestCardRow;
+                }
+                else if (closestCard - card == card - closestLowCard)
+                {
+                    // In pro mode, a tie between the closest board card matching the played card. Ie:
+                    // 49 50
+                    // 54 58
+                    // 
+                    // Played: 52
+                    ambiguousRows = new int[2];
+                    ambiguousRows[0] = closestCardRow;
+                    ambiguousRows[1] = closestLowCardRow;
+                    return RowPlacementAmbiguous;
+                }
+                else
+                {
+                    return card - closestCard > closestLowCard - card ? closestLowCardRow : closestCardRow;
                 }
             }
 
@@ -149,10 +201,22 @@ namespace TichuAI
 
         private void AddCardToRow(int row, int card)
         {
-            _board[row][_boardRowCounts[row]++] = card;
+            if (_sharedState.ProMode && card < _board[row][0])
+            {
+                for (int i = _boardRowCounts[row]; i > 0; i--)
+                {
+                    _board[row][i] = _board[row][i-1];
+                }
+                _board[row][0] = card;
+                ++_boardRowCounts[row];
+            }
+            else
+            {
+                _board[row][_boardRowCounts[row]++] = card;
+            }
         }
 
-        private int GetCardScore(int card)
+        private static int GetCardScore(int card)
         {
             if (card == 55)
             {
@@ -185,19 +249,19 @@ namespace TichuAI
             return sum;
         }
 
-        private void SetInputState(SixNimmtInputState newInputState)
+        private void SetGameState(SixNimmtInputState newInputState)
         {
-            // Don't call this unnecessarily
-            Debug.Assert(PlayInputState != newInputState);
-
             switch (newInputState)
             {
-                case SixNimmtInputState.CardSelection:
+                case SixNimmtInputState.SelectCard:
                     Debug.Assert(_currentRoundCards.Count == 0);
                     break;
                 case SixNimmtInputState.TakeRow:
+                case SixNimmtInputState.PlaceCards:
                     Debug.Assert(_currentRoundCards.Count == PlayerCount);
                     break;
+                default:
+                    throw new NotImplementedException("Best that we handle all states there.");
             }
 
             PlayInputState = newInputState;
@@ -206,7 +270,7 @@ namespace TichuAI
         public void CommitPlay(int play)
         {
             int playerChosenRow = -1;
-            if (PlayInputState == SixNimmtInputState.CardSelection)
+            if (PlayInputState == SixNimmtInputState.SelectCard)
             {
                 _currentRoundCards.Add(play);
                 CardToPlayerDictionary.Add(play, CurrentPlayerTurn);
@@ -230,15 +294,7 @@ namespace TichuAI
 
                     // Sort the cards
                     _currentRoundCards.Sort();
-
-                    // If the lowest card played is lower than all of the current rows, set the owning player's 
-                    // turn and the input state to TakeRow.
-                    if (ComputeCardRow(_currentRoundCards[0]) == RowNotFound)
-                    {
-                        SetInputState(SixNimmtInputState.TakeRow);
-                        SetCurrentPlayer(CardToPlayerDictionary[_currentRoundCards[0]]);
-                        return;
-                    }
+                    SetGameState(SixNimmtInputState.PlaceCards);
                 }
                 else
                 {
@@ -253,21 +309,27 @@ namespace TichuAI
             }
 
             Debug.Assert(_currentRoundCards.Count == PlayerCount);
-
-            bool first = true;
-            foreach (var card in _currentRoundCards)
+            
+            for (int currentRoundCardIndex = _currentRoundCardsProcessingIndex; currentRoundCardIndex < _currentRoundCards.Count; currentRoundCardIndex++)
             {
-                int targetRow = ComputeCardRow(card);
+                var card = _currentRoundCards[currentRoundCardIndex];
+                int computedCardRow = ComputeCardRow(card, out _);
+                int targetRow = computedCardRow;
 
-                if (PlayInputState == SixNimmtInputState.TakeRow && first)
+                if (PlayInputState == SixNimmtInputState.PlaceCards && targetRow < 0)
                 {
-                    Debug.Assert(targetRow == RowNotFound);
+                    SetGameState(SixNimmtInputState.TakeRow);
+                    SetCurrentPlayer(CardToPlayerDictionary[card]);
+                    return;
+                }
+
+                if (PlayInputState == SixNimmtInputState.TakeRow)
+                {
+                    Debug.Assert(targetRow < 0);
                     targetRow = playerChosenRow;
                 }
 
-                if (_boardRowCounts[targetRow] == MaxCardsPerRow || 
-                    (PlayInputState == SixNimmtInputState.TakeRow &&
-                    first))
+                if (_boardRowCounts[targetRow] == MaxCardsPerRow || (PlayInputState == SixNimmtInputState.TakeRow && computedCardRow == RowNotFound))
                 {
                     // The row is full; compute the points
                     int rowTaker = CardToPlayerDictionary[card];
@@ -279,13 +341,11 @@ namespace TichuAI
                     }
                 }
                 AddCardToRow(targetRow, card);
-                first = false;
+                SetGameState(SixNimmtInputState.PlaceCards);
             }
             _currentRoundCards.Clear();
-            if (PlayInputState == SixNimmtInputState.TakeRow)
-            {
-                SetInputState(SixNimmtInputState.CardSelection);
-            }
+            _currentRoundCardsProcessingIndex = 0;
+            SetGameState(SixNimmtInputState.SelectCard);
             SetCurrentPlayer(0);
         }
 
@@ -310,7 +370,7 @@ namespace TichuAI
 
         public IList<int> GetPlays()
         {
-            if (PlayInputState == SixNimmtInputState.CardSelection)
+            if (PlayInputState == SixNimmtInputState.SelectCard)
             {
                 if (CurrentPlayerTurn == _pointOfViewPlayer)
                 {
@@ -341,7 +401,18 @@ namespace TichuAI
             }
             else if (PlayInputState == SixNimmtInputState.TakeRow)
             {
-                return new int[] {0, 1, 2, 3};
+                var card = _currentRoundCards[_currentRoundCardsProcessingIndex];
+                int computedCardRow = ComputeCardRow(card, out int[] ambiguousRows);
+                Debug.Assert(computedCardRow < 0);
+                if (computedCardRow == RowNotFound)
+                {
+                    return new int[] {0, 1, 2, 3};
+                }
+                else
+                {
+                    return ambiguousRows;
+                }
+                
             }
 
             throw new InvalidOperationException();

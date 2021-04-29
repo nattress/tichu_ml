@@ -16,7 +16,7 @@ namespace TichuAI
                 List<int> playsList = new List<int>(gameState.GetPlays());
                 playsList.Sort();
                 string plays = string.Join(", ", playsList.ToArray());
-                if (gameState.PlayInputState == SixNimmtInputState.CardSelection)
+                if (gameState.PlayInputState == SixNimmtInputState.SelectCard)
                 {
                     // string cards = string.Join(", ", gameState.PlayerCards[gameState.CurrentPlayerTurn].ToArray());
                     Console.WriteLine($"Enter a play. Cards: {plays}");
@@ -96,7 +96,7 @@ namespace TichuAI
 
                     while (true)
                     {
-                        if (state.CurrentPlayerTurn == 0 && state.PlayInputState == SixNimmtInputState.CardSelection)
+                        // if (state.CurrentPlayerTurn == 0 && state.PlayInputState == SixNimmtInputState.SelectCard)
                         {
                             Logger.Log.WriteLine(state.ToString());
                         }
