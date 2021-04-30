@@ -103,6 +103,7 @@ namespace TichuAI
             clonedState._currentRoundCards = new List<int>(_currentRoundCards);
             clonedState._remainingCards = new HashSet<int>(_remainingCards);
             clonedState._remainingPlayoutCards = new HashSet<int>(_remainingPlayoutCards);
+            clonedState._currentRoundCardsProcessingIndex = _currentRoundCardsProcessingIndex;
             clonedState.CardToPlayerDictionary = new Dictionary<int, int>(CardToPlayerDictionary);
             return clonedState;
         }
@@ -310,9 +311,9 @@ namespace TichuAI
 
             Debug.Assert(_currentRoundCards.Count == PlayerCount);
             
-            for (int currentRoundCardIndex = _currentRoundCardsProcessingIndex; currentRoundCardIndex < _currentRoundCards.Count; currentRoundCardIndex++)
+            for (;_currentRoundCardsProcessingIndex < _currentRoundCards.Count; _currentRoundCardsProcessingIndex++)
             {
-                var card = _currentRoundCards[currentRoundCardIndex];
+                var card = _currentRoundCards[_currentRoundCardsProcessingIndex];
                 int computedCardRow = ComputeCardRow(card, out _);
                 int targetRow = computedCardRow;
 
@@ -445,15 +446,9 @@ namespace TichuAI
 
             for (int i = 0; i < BoardRowCount; i++)
             {
-                if (CurrentPlayerTurn == i)
-                {
-                    sb.Append($"[{i}]");
-                }
-                else
-                {
-                    sb.Append($" {i} ");
-                }
-                sb.AppendLine(string.Join(" ", _board[i]));
+                sb.Append($" {i} ");
+                sb.Append(string.Join(" ", _board[i]));
+                sb.AppendLine($" ({_board[i].Select(card => card > 0 ? GetCardScore(card) : 0).Sum()} pts)");
             }
             sb.AppendLine($"Scores: ");
             for (int i = 0; i < _scores.Length; i++)
