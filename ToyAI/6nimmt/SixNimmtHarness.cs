@@ -63,18 +63,18 @@ namespace TichuAI
             int[] wins = new int[PlayerCount];
             int draws = 0;
             IPlayGenerator<int>[] playGenerators = new IPlayGenerator<int>[PlayerCount];
-            playGenerators[0] = new ConsoleInputSixNimmtPlayGenerator();
+            // playGenerators[0] = new ConsoleInputSixNimmtPlayGenerator();
+            // playGenerators[1] = new RandomPlayGenerator<int>();
+            // playGenerators[2] = new RandomPlayGenerator<int>();
+            // playGenerators[3] = new RandomPlayGenerator<int>();
+            // playGenerators[4] = new RandomPlayGenerator<int>();
+
+            playGenerators[0] = new Mcts<int>(numIterations: 2000, simulationDepth: 10, random);
             playGenerators[1] = new RandomPlayGenerator<int>();
             playGenerators[2] = new RandomPlayGenerator<int>();
             playGenerators[3] = new RandomPlayGenerator<int>();
             playGenerators[4] = new RandomPlayGenerator<int>();
-
-            // playGenerators[0] = new Mcts<TicTacToePlay>(10000, 20, random);
-            // playGenerators[1] = new Mcts<TicTacToePlay>(10000, 20, random);
-            // playGenerators[1] = new RandomPlayGenerator<TicTacToePlay>();
-            // playGenerators[0] = new ConsoleInputTicTacToePlayGenerator();
-            // playGenerators[0] = new RandomPlayGenerator<TicTacToePlay>();
-            Logger.Log.Enabled = true;
+            Logger.Log.Enabled = false;
             for (int iteration = 0; iteration < iterations; iteration++)
             {
                 double[] scores = null;
@@ -96,13 +96,13 @@ namespace TichuAI
 
                     while (true)
                     {
-                        // if (state.CurrentPlayerTurn == 0 && state.PlayInputState == SixNimmtInputState.SelectCard)
+                        if (state.CurrentPlayerTurn == 0 && state.PlayInputState == SixNimmtInputState.SelectCard)
                         {
                             Logger.Log.WriteLine(state.ToString());
                         }
                         state.SetPointOfViewPlayer(state.CurrentPlayerTurn);
                         var play = playGenerators[state.CurrentPlayerTurn].FindPlay(state);
-                        Console.WriteLine($"Player {state.CurrentPlayerTurn} plays {play}");
+                        // Console.WriteLine($"Player {state.CurrentPlayerTurn} plays {play}");
                         state.CommitPlay(play);
                         if (state.GameOver())
                             break;
@@ -144,7 +144,7 @@ namespace TichuAI
 
         static SixNimmtGameState CreateNewGame(Random random, double[] scores, bool proMode)
         {
-            SixNimmtDeck deck = SixNimmtDeck.Create();
+            SixNimmtDeck deck = SixNimmtDeck.Create(random);
             SixNimmtGameState state = SixNimmtGameState.Create(random, deck, PlayerCount, proMode);
 
             if (scores != null)

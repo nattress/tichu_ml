@@ -433,7 +433,6 @@ namespace TichuAI
             CurrentPlayerTurn = player;
         }
 
-        // Unused since this is a perfect information game
         public void SetPointOfViewPlayer(int player)
         {
             _pointOfViewPlayer = player;

@@ -24,9 +24,8 @@ namespace TichuAI
             _allCards = allCards;
         }
 
-        private void Shuffle()
+        private void Shuffle(Random random)
         {
-            Random random = new Random();
             _shuffledCards = new int[DeckSize];
             Array.Copy(_allCards, _shuffledCards, DeckSize);
             int shuffle = DeckSize;
@@ -42,7 +41,7 @@ namespace TichuAI
         /// <summary>
         /// Creates a random deck of cards excluding dog, dragon, phoenix, mahjong
         /// </summary>
-        public static SixNimmtDeck Create()
+        public static SixNimmtDeck Create(Random random)
         {
             int[] unshuffled = new int[DeckSize];
             for (int i = 0; i < DeckSize; i++)
@@ -50,7 +49,7 @@ namespace TichuAI
                 unshuffled[i] = i + 1;
             }
             SixNimmtDeck deck = new SixNimmtDeck(unshuffled);
-            deck.Shuffle();
+            deck.Shuffle(random);
 
             return deck;
         }

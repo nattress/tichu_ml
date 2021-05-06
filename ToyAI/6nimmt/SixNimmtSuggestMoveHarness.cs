@@ -75,7 +75,7 @@ namespace TichuAI
 
         static SixNimmtGameState CreateNewGame(Random random, double[] scores, bool proMode)
         {
-            SixNimmtDeck deck = SixNimmtDeck.Create();
+            SixNimmtDeck deck = SixNimmtDeck.Create(random);
             SixNimmtGameState state = SixNimmtGameState.Create(random, deck, PlayerCount, proMode);
 
             if (scores != null)
