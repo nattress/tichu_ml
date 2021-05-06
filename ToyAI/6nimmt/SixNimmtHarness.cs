@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace TichuAI
@@ -75,6 +76,7 @@ namespace TichuAI
             playGenerators[3] = new RandomPlayGenerator<int>();
             playGenerators[4] = new RandomPlayGenerator<int>();
             Logger.Log.Enabled = false;
+            Stopwatch stopwatch = Stopwatch.StartNew();
             for (int iteration = 0; iteration < iterations; iteration++)
             {
                 double[] scores = null;
@@ -140,6 +142,8 @@ namespace TichuAI
                 Console.WriteLine(output);
             }
             Console.WriteLine($"Draws: {draws}");
+            stopwatch.Stop();
+            Console.WriteLine($"Finished after {stopwatch.ElapsedMilliseconds:N0}ms.");
         }
 
         static SixNimmtGameState CreateNewGame(Random random, double[] scores, bool proMode)

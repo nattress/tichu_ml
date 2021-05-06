@@ -390,13 +390,6 @@ namespace TichuAI
                     // cards from the pov player's hand since from the AI agent's pov those cards are
                     // determined (ie, we're not cheating by looking at their hand here).
                     // We could use a more sophisticated selection policy here to guide the search.
-                    foreach (var c in _remainingPlayoutCards)
-                    {
-                        if (CardToPlayerDictionary.ContainsKey(c))
-                        {
-                            Console.WriteLine($"Already contains {c}");
-                        }
-                    }
                     return new List<int>(_remainingPlayoutCards);
                 }
             }
