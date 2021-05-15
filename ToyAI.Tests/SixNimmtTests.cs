@@ -77,8 +77,7 @@ namespace ToyAI.Tests
             // 56
             // 57
             // 58  60  61  62  63  | 64 <-- Player 4 takes 7 points
-            int[] scores = this.gameState.Evaluate().Select(x => (int)x).ToArray();
-            CollectionAssert.AreEqual(new int[] {66, 66, 66, 66, 59}, scores);
+            ValidateScores(this.gameState, new int[] {66, 66, 66, 66, 59});
             Assert.IsTrue(this.gameState.CurrentPlayerTurn == 0);
             Assert.IsTrue(this.gameState.PlayInputState == SixNimmtInputState.SelectCard);
         }
@@ -111,16 +110,74 @@ namespace ToyAI.Tests
             // 57
             // 58  101 102 103 104 |
             this.gameState.CommitPlay(0);
-            int[] scores = this.gameState.Evaluate().Select(x => (int)x).ToArray();
-            CollectionAssert.AreEqual(new int[] {59, 66, 66, 66, 66}, scores);
+            ValidateScores(this.gameState, new int[] {59, 66, 66, 66, 66});
+        }
+
+        [TestMethod]
+        public void TestNotGameOverAtBeginning()
+        {
+            UseEvenlyDistributedStartingState();
+            Assert.IsFalse(this.gameState.GameOver());
         }
 
         [TestMethod]
         public void TestGameOver()
         {
             UseEvenlyDistributedStartingState();
-            Assert.IsFalse(this.gameState.GameOver());
             
+            CommitPlays(this.gameState, new int[] {10, 11, 12, 13, 14});
+            // Take row 0
+            // {
+            //     0 55 0 0 0 0 (7 pts)
+            //     1 56 0 0 0 0 (1 pts)
+            //     2 57 0 0 0 0 (1 pts)
+            //     3 58 0 0 0 0 (1 pts)
+            //     Scores: 
+            //     0: 66
+            //     1: 66
+            //     2: 66
+            //     3: 66
+            //     4: 66
+            //     Current round cards: 10,11,12,13,14
+            // }
+            this.gameState.CommitPlay(0);
+            ValidateScores(this.gameState, new int[] {59, 66, 66, 66, 66});
+            Assert.IsFalse(this.gameState.GameOver());
+            // Take row 0
+            // {
+            //     0 10 11 12 13 14 (7 pts)
+            //     1 56 0 0 0 0 (1 pts)
+            //     2 57 0 0 0 0 (1 pts)
+            //     3 58 0 0 0 0 (1 pts)
+            //     Scores: 
+            //     0: 59
+            //     1: 66
+            //     2: 66
+            //     3: 66
+            //     4: 66
+            //     Current round cards: 10,11,12,13,14
+            // }
+            
+        }
+
+        /// <summary>
+        /// Batch a set of plays
+        /// </summary>
+        private static void CommitPlays(SixNimmtGameState gameState, int[] plays)
+        {
+            foreach (int play in plays)
+            {
+                gameState.CommitPlay(play);
+            }
+        }
+
+        /// <summary>
+        /// Tests the scores in "gameState" against expectedScores
+        /// </summary>
+        private static void ValidateScores(SixNimmtGameState gameState, int[] expectedScores)
+        {
+            int[] scores = gameState.Evaluate().Select(x => (int)x).ToArray();
+            CollectionAssert.AreEqual(expectedScores, scores);
         }
     }
 }

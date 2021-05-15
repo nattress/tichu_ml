@@ -173,6 +173,19 @@ namespace TichuAI
             return closestCardRow != -1 ? closestCardRow : RowNotFound;
         }
 
+        internal int[][] Board
+        {
+            get
+            {
+                int[][] ret = new int[SixNimmtGameState.BoardRowCount][];
+                for (int i = 0; i < SixNimmtGameState.BoardRowCount; ++i)
+                {
+                    ret[i] = new int[_boardRowCounts[i]];
+                }
+                return ret;
+            }
+        }
+
         /// <summary>
         /// Returns the current highest card on a row
         /// </summary>
