@@ -6,17 +6,17 @@ namespace TichuAI
 {
     public class SixNimmtSuggestMoveHarness
     {
-        private const int PlayerCount = 5;
+        private const int PlayerCount = 3;
         private const bool ProMode = true;
         public static void Run()
         {
             Random random = new Random();
             IPlayGenerator<int>[] playGenerators = new IPlayGenerator<int>[PlayerCount];
             playGenerators[0] = new Mcts<int>(10000, 20, random);
-            playGenerators[1] = new ConsoleInputSixNimmtPlayGenerator();
-            playGenerators[2] = new ConsoleInputSixNimmtPlayGenerator();
-            playGenerators[3] = new ConsoleInputSixNimmtPlayGenerator();
-            playGenerators[4] = new ConsoleInputSixNimmtPlayGenerator();
+            playGenerators[1] = new ConsoleInputSixNimmtPlayGenerator("player2");
+            playGenerators[2] = new ConsoleInputSixNimmtPlayGenerator("player3");
+            // playGenerators[3] = new ConsoleInputSixNimmtPlayGenerator();
+            // playGenerators[4] = new ConsoleInputSixNimmtPlayGenerator();
             Logger.Log.Enabled = true;
             while (true)
             {

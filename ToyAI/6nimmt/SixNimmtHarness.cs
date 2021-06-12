@@ -7,6 +7,12 @@ namespace TichuAI
 {
     internal class ConsoleInputSixNimmtPlayGenerator : IPlayGenerator<int>
     {
+        private readonly string playerName;
+        public ConsoleInputSixNimmtPlayGenerator(string playerName)
+        {
+            this.playerName = playerName;
+        }
+
         // Human player input
         public int FindPlay(IGameState<int> iGameState)
         {
@@ -20,30 +26,30 @@ namespace TichuAI
                 if (gameState.PlayInputState == SixNimmtInputState.SelectCard)
                 {
                     // string cards = string.Join(", ", gameState.PlayerCards[gameState.CurrentPlayerTurn].ToArray());
-                    Console.WriteLine($"Enter a play. Cards: {plays}");
+                    Console.WriteLine($"[{playerName}] Enter a play. Cards: {plays}");
                 }
                 else
                 {
                     // string plays = string.Join(", ", gameState.GetPlays().ToArray());
-                    Console.WriteLine($"Choose a row to take: {plays}");
+                    Console.WriteLine($"[{playerName}] Choose a row to take: {plays}");
                 }
                 
                 string playInput = Console.ReadLine();
                 if (string.IsNullOrEmpty(playInput))
                 {
-                    Console.WriteLine("Invalid play. Try again.");
+                    Console.WriteLine($"[{playerName}] Invalid play. Try again.");
                     continue;
                 }
                 
                 if (!int.TryParse(playInput, out int attemptedPlay))
                 {
-                    Console.WriteLine("Invalid play. Input must be a number.");
+                    Console.WriteLine($"[{playerName}] Invalid play. Input must be a number.");
                     continue;
                 }
 
                 if (!gameState.GetPlays().Contains(attemptedPlay))
                 {
-                    Console.WriteLine($"Chosen play '{attemptedPlay}' is not valid.");
+                    Console.WriteLine($"[{playerName}] Chosen play '{attemptedPlay}' is not valid.");
                     continue;
                 }
                 return attemptedPlay;
